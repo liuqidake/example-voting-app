@@ -1,0 +1,47 @@
+name: Trigger auto deployment for container-app-adqatq455muem
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - 'vote/**'
+    - '.github/workflows/container-app-adqatq455muem-AutoDeployTrigger-fcccf3db-000a-4bcd-9c36-140e17d27cf6.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.CONTAINERAPPADQATQ455MUEM_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.CONTAINERAPPADQATQ455MUEM_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.CONTAINERAPPADQATQ455MUEM_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}/vote 
+          registryUrl: containerregistryadqatq455muem.azurecr.io
+          registryUsername: ${{ secrets.CONTAINERAPPADQATQ455MUEM_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.CONTAINERAPPADQATQ455MUEM_REGISTRY_PASSWORD }}
+          containerAppName: container-app-adqatq455muem
+          resourceGroup: examplevotingapp9d8d
+          imageToBuild: containerregistryadqatq455muem.azurecr.io/container-app-adqatq455muem:${{ github.sha }}
+          _buildArgumentsKey_: |
+            _buildArgumentsValues_
+
+
